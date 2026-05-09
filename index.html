@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PharmaChain — Blockchain Supply Verification</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:    #050e24;
+      --accent:  #1a6cff;
+      --sky:     #38b6ff;
+      --teal:    #00d4c8;
+      --glass:   rgba(255,255,255,0.05);
+      --glass2:  rgba(255,255,255,0.09);
+      --border:  rgba(255,255,255,0.10);
+      --text:    #e8eeff;
+      --muted:   rgba(232,238,255,0.55);
+      --success: #00e5a0;
+      --warn:    #ffb830;
+      --danger:  #ff4a6e;
+      --transit: #a78bfa;
+      --r: 14px;
+      --shadow: 0 24px 64px rgba(0,0,0,0.55);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--navy);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .mesh {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(26,108,255,0.18) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 80%, rgba(0,212,200,0.12) 0%, transparent 55%),
+        radial-gradient(ellipse 40% 40% at 60% 30%, rgba(56,182,255,0.10) 0%, transparent 50%);
+    }
+
+    .grid-overlay {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    .wrapper { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(20px);
+      background: rgba(5,14,36,0.75);
+      position: sticky; top: 0; z-index: 100;
+    }
+
+    .header-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 0;
+    }
+
+    .logo {
+      display: flex; align-items: center; gap: 12px;
+      font-family: 'Syne', sans-serif; font-size: 1.35rem; font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-icon {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--sky));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; box-shadow: 0 0 20px rgba(26,108,255,0.4);
+    }
+
+    .logo span { color: var(--sky); }
+
+    #walletBtn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 9px 18px; border-radius: 50px;
+      border: 1px solid var(--border);
+      background: var(--glass2);
+      cursor: pointer; font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem; font-weight: 600;
+      color: var(--text); transition: all .25s;
+      backdrop-filter: blur(10px);
+    }
+
+    #walletBtn:hover { border-color: var(--accent); background: rgba(26,108,255,0.15); }
+
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #555; transition: background .3s; }
+    .dot.connected { background: var(--success); box-shadow: 0 0 8px var(--success); }
+    #walletAddr { font-size: 0.78rem; color: var(--muted); }
+
+    .hero { padding: 56px 0 44px; text-align: center; }
+
+    .hero h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2.2rem, 5vw, 3.8rem);
+      font-weight: 800; line-height: 1.1;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #fff 0%, var(--sky) 50%, var(--teal) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 18px;
+    }
+
+    .hero p {
+      font-size: 1.05rem; color: var(--muted); max-width: 520px;
+      margin: 0 auto; line-height: 1.7;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 44px;
+      margin-bottom: 40px;
+    }
+
+    @media (max-width: 720px) { .main-grid { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 32px;
+      backdrop-filter: blur(20px);
+      box-shadow: var(--shadow);
+      transition: border-color .3s;
+    }
+
+    .card:hover { border-color: rgba(26,108,255,0.4); }
+
+    .card-title {
+      font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700;
+      letter-spacing: 0.04em; text-transform: uppercase;
+      color: var(--sky); margin-bottom: 24px;
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    .field { margin-bottom: 20px; }
+
+    label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-bottom: 8px; letter-spacing: 0.05em; text-transform: uppercase; }
+
+    input[type="number"] {
+      width: 100%; padding: 14px 18px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text);
+      font-family: 'DM Sans', sans-serif; font-size: 1rem;
+      outline: none; transition: border-color .25s, box-shadow .25s;
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+    input[type="number"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(26,108,255,0.2);
+    }
+
+    .btn-primary {
+      width: 100%; padding: 15px;
+      background: linear-gradient(135deg, var(--accent), var(--sky));
+      border: none; border-radius: 10px;
+      color: #fff; font-family: 'DM Sans', sans-serif;
+      font-size: 1rem; font-weight: 700;
+      cursor: pointer; letter-spacing: 0.02em;
+      transition: opacity .2s, transform .15s, box-shadow .2s;
+      box-shadow: 0 6px 28px rgba(26,108,255,0.45);
+      position: relative; overflow: hidden;
+    }
+
+    .btn-primary::after { content: ''; position: absolute; inset: 0; background: rgba(255,255,255,0); transition: background .2s; }
+    .btn-primary:hover::after { background: rgba(255,255,255,0.08); }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+    #txStatus {
+      margin-top: 16px; padding: 14px 16px;
+      border-radius: 10px; font-size: 0.85rem;
+      display: none; align-items: center; gap: 10px;
+      animation: fadeIn .35s ease;
+    }
+
+    #txStatus.show { display: flex; }
+    #txStatus.pending { background: rgba(255,184,48,0.12); border: 1px solid rgba(255,184,48,0.3); color: var(--warn); }
+    #txStatus.success { background: rgba(0,229,160,0.10); border: 1px solid rgba(0,229,160,0.3); color: var(--success); }
+    #txStatus.error   { background: rgba(255,74,110,0.10); border: 1px solid rgba(255,74,110,0.3); color: var(--danger); }
+
+    .spinner {
+      width: 16px; height: 16px; border-radius: 50%;
+      border: 2px solid transparent;
+      border-top-color: var(--warn);
+      animation: spin .7s linear infinite; flex-shrink: 0;
+    }
+
+    #productResult { display: none; animation: slideUp .4s ease; }
+    #productResult.show { display: block; }
+
+    .product-header {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; gap: 12px;
+      margin-bottom: 24px; flex-wrap: wrap;
+    }
+
+    .product-name {
+      font-family: 'Syne', sans-serif; font-size: 1.5rem;
+      font-weight: 800; letter-spacing: -0.02em;
+    }
+
+    .status-badge {
+      padding: 5px 14px; border-radius: 50px;
+      font-size: 0.75rem; font-weight: 700;
+      letter-spacing: 0.06em; text-transform: uppercase; flex-shrink: 0;
+    }
+
+    .status-Created   { background: rgba(0,229,160,0.15);   color: var(--success); border: 1px solid rgba(0,229,160,0.35); }
+    .status-InTransit { background: rgba(167,139,250,0.15); color: var(--transit); border: 1px solid rgba(167,139,250,0.35); }
+    .status-Delivered { background: rgba(26,108,255,0.15);  color: var(--sky);     border: 1px solid rgba(56,182,255,0.35); }
+    .status-Recalled  { background: rgba(255,74,110,0.15);  color: var(--danger);  border: 1px solid rgba(255,74,110,0.35); }
+
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+    @media (max-width: 480px) { .detail-grid { grid-template-columns: 1fr; } }
+
+    .detail-item {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border); border-radius: 10px;
+      padding: 14px 16px;
+    }
+
+    .detail-label { font-size: 0.72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; }
+    .detail-value { font-size: 0.9rem; font-weight: 500; word-break: break-all; }
+
+    .lifecycle { display: flex; margin-bottom: 24px; }
+
+    .lc-step { flex: 1; text-align: center; position: relative; padding-top: 36px; }
+
+    .lc-step::before {
+      content: ''; position: absolute;
+      top: 13px; left: -50%; width: 100%;
+      height: 2px; background: var(--border); z-index: 0;
+    }
+
+    .lc-step:first-child::before { display: none; }
+
+    .lc-dot {
+      width: 26px; height: 26px; border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--navy);
+      position: absolute; top: 0; left: 50%;
+      transform: translateX(-50%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; z-index: 1; transition: all .4s;
+    }
+
+    .lc-label { font-size: 0.68rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+    .lc-step.active .lc-dot   { background: var(--accent); border-color: var(--sky); box-shadow: 0 0 14px rgba(26,108,255,0.6); }
+    .lc-step.active .lc-label { color: var(--sky); }
+    .lc-step.done .lc-dot     { background: var(--success); border-color: var(--success); }
+    .lc-step.done::before     { background: var(--success); }
+
+    #qrCard { display: none; }
+    #qrCard.show { display: block; }
+    #qrcode { display: flex; justify-content: center; margin-bottom: 16px; }
+    #qrcode canvas, #qrcode img { border-radius: 10px; border: 4px solid var(--glass2); }
+    .qr-label { text-align: center; font-size: 0.78rem; color: var(--muted); }
+
+    footer { border-top: 1px solid var(--border); padding: 40px 0; text-align: center; }
+
+    .footer-logo { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 800; margin-bottom: 10px; }
+    .footer-logo span { color: var(--sky); }
+    footer p { font-size: 0.82rem; color: var(--muted); line-height: 1.7; }
+    footer .grad-tag {
+      display: inline-block; margin-top: 12px;
+      padding: 5px 16px; border-radius: 50px;
+      border: 1px solid var(--border);
+      font-size: 0.75rem; color: var(--muted);
+    }
+
+    @keyframes fadeIn  { from { opacity:0 } to { opacity:1 } }
+    @keyframes slideUp { from { opacity:0; transform: translateY(20px) } to { opacity:1; transform: none } }
+    @keyframes spin    { to { transform: rotate(360deg) } }
+
+    .fade-in       { animation: fadeIn .6s ease both; }
+    .fade-in-delay { animation: fadeIn .6s ease .2s both; }
+
+    #errorBox {
+      display: none; padding: 14px 18px;
+      background: rgba(255,74,110,0.1);
+      border: 1px solid rgba(255,74,110,0.3);
+      border-radius: 10px; color: var(--danger);
+      font-size: 0.85rem; margin-top: 14px;
+      animation: fadeIn .3s ease;
+    }
+
+    #errorBox.show { display: flex; gap: 10px; align-items: flex-start; }
+  </style>
+</head>
+<body>
+
+<div class="mesh"></div>
+<div class="grid-overlay"></div>
+
+<header>
+  <div class="wrapper">
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon">⬡</div>
+        Pharma<span>Chain</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <div id="walletAddr" style="display:none;"></div>
+        <button id="walletBtn" onclick="connectWallet()">
+          <span class="dot" id="walletDot"></span>
+          <span id="walletBtnText">Connect MetaMask</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="hero wrapper fade-in">
+  <h1>Secure Pharmaceutical<br/>Supply Chain Verification</h1>
+  <p>Authenticate drug authenticity and track provenance across the supply chain.</p>
+</section>
+
+<div class="wrapper fade-in-delay">
+  <div class="main-grid">
+
+    <div class="card">
+      <div class="card-title"><span>🔍</span> Verify Product</div>
+
+      <div class="field">
+        <label for="productId">Product ID</label>
+        <input type="number" id="productId" placeholder="Enter numeric product ID (e.g. 1)" min="1" />
+      </div>
+
+      <button class="btn-primary" id="verifyBtn" onclick="verifyProduct()">
+        Verify on Blockchain
+      </button>
+
+      <div id="txStatus">
+        <span class="spinner" id="txSpinner"></span>
+        <span id="txMsg">Querying smart contract…</span>
+      </div>
+
+      <div id="errorBox">
+        <span>⚠</span>
+        <span id="errorMsg">An error occurred.</span>
+      </div>
+
+      <div id="productResult" style="margin-top:28px;">
+        <div class="product-header">
+          <div class="product-name" id="pName">—</div>
+          <div class="status-badge" id="pStatusBadge">—</div>
+        </div>
+
+        <div class="lifecycle">
+          <div class="lc-step" id="lc-0">
+            <div class="lc-dot">✓</div>
+            <div class="lc-label">Created</div>
+          </div>
+          <div class="lc-step" id="lc-1">
+            <div class="lc-dot">→</div>
+            <div class="lc-label">In Transit</div>
+          </div>
+          <div class="lc-step" id="lc-2">
+            <div class="lc-dot">✓</div>
+            <div class="lc-label">Delivered</div>
+          </div>
+          <div class="lc-step" id="lc-3">
+            <div class="lc-dot">⚠</div>
+            <div class="lc-label">Recalled</div>
+          </div>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail-item">
+            <div class="detail-label">Batch Number</div>
+            <div class="detail-value" id="pBatch">—</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Expiry Date</div>
+            <div class="detail-value" id="pExpiry">—</div>
+          </div>
+          <div class="detail-item" style="grid-column:1/-1">
+            <div class="detail-label">Current Owner</div>
+            <div class="detail-value" id="pOwner">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="qrCard">
+      <div class="card-title"><span>⬛</span> Product QR Code</div>
+      <div id="qrcode"></div>
+      <div class="qr-label" id="qrLabel">Scan to verify on-chain</div>
+      <div style="margin-top:20px;padding:14px 16px;background:rgba(255,255,255,0.04);border-radius:10px;border:1px solid var(--border)">
+        <div class="detail-label" style="margin-bottom:6px;">QR Data</div>
+        <div id="qrData" style="font-size:0.75rem;color:var(--muted);word-break:break-all;font-family:monospace;line-height:1.6;"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <div class="wrapper">
+    <div class="footer-logo">Pharma<span>Chain</span></div>
+    <p>Blockchain-powered pharmaceutical supply chain verification system.<br/>Built with Solidity · Web3.js · MetaMask · Ethereum Sepolia</p>
+    <div class="grad-tag">🎓 Graduation Project — Department of Computer Science & Engineering</div>
+  </div>
+</footer>
+<script src="app.js"></script>
+</body>
+</html>
