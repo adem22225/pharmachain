@@ -334,7 +334,7 @@ async function verifyProduct() {
   setTx("pending", "Querying blockchain…");
   document.getElementById("verifyBtn").disabled = true;
   try {
-    const r = await contract.methods.getProduct(id).call();
+    const r = await contract.methods.verifyProduct(id).call();
     const name = r[0]; const batch = r[1]; const owner = r[2];
     const statusIdx = parseInt(r[3], 10); const expiryTs = parseInt(r[4], 10);
     if (!name || name === "") throw new Error("Product not found on the blockchain.");
@@ -415,7 +415,7 @@ async function loadEvents(productId, statusKey) {
     for (const name of evtNames) {
       try {
         const res = await contract.getPastEvents(name, {
-          filter: {productId: productId},
+          filter: {id: productId},
           fromBlock: from,
           toBlock: "latest"
         });
