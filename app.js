@@ -439,6 +439,7 @@ const time = new Date(block.timestamp * 1000)
       tl.appendChild(item);
     }
   } catch(e) {
+	console.log(e);
     document.getElementById("eventCount").textContent = "Could not load events";
     tl.innerHTML = `<div class="tl-empty"><div class="tl-empty-icon">⚠</div>Event log unavailable — check contract address and network</div>`;
   }
