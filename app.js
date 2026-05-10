@@ -391,21 +391,46 @@ async function loadEvents(productId, statusKey) {
   tl.innerHTML = `<div class="tl-empty"><div class="tl-empty-icon" style="font-size:1rem">⏳</div>Loading blockchain events…</div>`;
   document.getElementById("eventCount").textContent = "Loading…";
   try {
-    const from = 0;
-    const events = [];
-    const latest = await web3.eth.getBlockNumber();
-	const fromBlock = Math.max(latest - 50000, 0);
+    const from = Math.max(
+  (await web3.eth.getBlockNumber()) - 50000,
+  0
+);
 
-const logs = await web3.eth.getPastLogs({
-  address: CONTRACT_ADDRESS,
-  fromBlock: fromBlock,
-  toBlock: latest
-});
+const events = [];
 
-console.log(logs);
+const evtNames = [
+  "ProductRegistered",
+  "OwnershipTransferred",
+  "ProductDelivered",
+  "ProductRecalled"
+];
 
+for (const name of evtNames) {
 
-events.push(...logs);
+  const res = await contract.getPastEvents(
+    name,
+    {
+      fromBlock: from,
+      toBlock: "latest"
+    }
+  );
+
+  res.forEach(e => {
+
+    const evId = e.returnValues.id;
+
+    if (parseInt(evId) === parseInt(productId)) {
+
+      events.push({
+        ...e,
+        _name: name
+      });
+
+    }
+
+  });
+
+}
     
     events.sort((a,b) => a.blockNumber - b.blockNumber);
     document.getElementById("eventCount").textContent = events.length + " event" + (events.length !== 1 ? "s" : "") + " found";
