@@ -423,3 +423,341 @@
 <script src="app.js"></script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PharmaChain — Blockchain Pharmaceutical Verification</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#020818;
+--bg2:#050f25;
+--bg3:#071230;
+--panel:rgba(6,18,50,0.7);
+--border:rgba(56,139,255,0.15);
+--border2:rgba(56,139,255,0.3);
+--accent:#388bff;
+--accent2:#00d4ff;
+--accent3:#7c3aed;
+--green:#00e5a0;
+--purple:#a78bfa;
+--red:#ff4a6e;
+--warn:#ffb830;
+--text:#e2eaff;
+--muted:rgba(180,200,255,0.5);
+--mono:'JetBrains Mono',monospace;
+--sans:'Space Grotesk',sans-serif;
+--display:'Outfit',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+.noise{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.04;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:200px}
+.orbs{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.orb{position:absolute;border-radius:50%;filter:blur(120px);opacity:.18}
+.orb1{width:700px;height:700px;background:radial-gradient(circle,#1a4fff,transparent);top:-200px;left:-200px;animation:drift1 20s ease-in-out infinite}
+.orb2{width:500px;height:500px;background:radial-gradient(circle,#7c3aed,transparent);bottom:-100px;right:-100px;animation:drift2 25s ease-in-out infinite}
+.orb3{width:400px;height:400px;background:radial-gradient(circle,#00d4ff,transparent);top:50%;left:50%;transform:translate(-50%,-50%);animation:drift3 18s ease-in-out infinite}
+@keyframes drift1{0%,100%{transform:translate(0,0)}50%{transform:translate(60px,40px)}}
+@keyframes drift2{0%,100%{transform:translate(0,0)}50%{transform:translate(-40px,-60px)}}
+@keyframes drift3{0%,100%{transform:translate(-50%,-50%)}50%{transform:translate(-45%,-55%)}}
+
+.grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(56,139,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(56,139,255,0.04) 1px,transparent 1px);background-size:60px 60px}
+
+.wrapper{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:0 28px}
+
+header{position:sticky;top:0;z-index:200;border-bottom:1px solid var(--border);backdrop-filter:blur(24px);background:rgba(2,8,24,0.85)}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:16px 0;gap:16px}
+.brand{display:flex;align-items:center;gap:14px}
+.brand-icon{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:1.2rem;box-shadow:0 0 30px rgba(56,139,255,0.4);position:relative;overflow:hidden}
+.brand-icon::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.2),transparent)}
+.brand-name{font-family:var(--display);font-size:1.4rem;font-weight:800;letter-spacing:-0.03em}
+.brand-name em{color:var(--accent2);font-style:normal}
+.brand-tag{font-size:0.7rem;color:var(--muted);font-family:var(--mono);letter-spacing:0.05em;margin-top:-2px}
+
+.nav-right{display:flex;align-items:center;gap:12px}
+.network-pill{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:50px;border:1px solid rgba(0,212,255,0.2);background:rgba(0,212,255,0.06);font-size:0.74rem;font-family:var(--mono);color:var(--accent2)}
+.net-dot{width:6px;height:6px;border-radius:50%;background:var(--accent2);box-shadow:0 0 8px var(--accent2);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+#walletBtn{display:flex;align-items:center;gap:8px;padding:9px 18px;border-radius:50px;border:1px solid var(--border2);background:var(--panel);cursor:pointer;font-family:var(--sans);font-size:0.82rem;font-weight:600;color:var(--text);transition:all .25s;backdrop-filter:blur(10px)}
+#walletBtn:hover{border-color:var(--accent);background:rgba(56,139,255,0.12);box-shadow:0 0 20px rgba(56,139,255,0.2)}
+.w-dot{width:8px;height:8px;border-radius:50%;background:#444;transition:all .3s;flex-shrink:0}
+.w-dot.on{background:var(--green);box-shadow:0 0 10px var(--green)}
+#wAddr{font-size:0.76rem;color:var(--muted);font-family:var(--mono)}
+
+.hero{padding:80px 0 60px;text-align:center}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;padding:5px 16px;border-radius:50px;border:1px solid var(--border2);background:rgba(56,139,255,0.08);font-size:0.72rem;font-family:var(--mono);color:var(--accent2);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:32px}
+.hero h1{font-family:var(--display);font-size:clamp(2.4rem,6vw,5rem);font-weight:900;line-height:1.05;letter-spacing:-0.04em;margin-bottom:20px}
+.hero h1 .line2{background:linear-gradient(90deg,var(--accent),var(--accent2),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{font-size:1.05rem;color:var(--muted);max-width:580px;margin:0 auto 48px;line-height:1.75}
+.hero-metrics{display:flex;justify-content:center;gap:40px;flex-wrap:wrap;padding:28px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:0}
+.metric{text-align:center}
+.metric-val{font-family:var(--display);font-size:1.8rem;font-weight:800;background:linear-gradient(135deg,#fff,var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.metric-label{font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-top:2px;font-family:var(--mono)}
+
+.dashboard{padding:48px 0}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:900px){.dash-grid{grid-template-columns:1fr}}
+
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:28px;backdrop-filter:blur(20px);box-shadow:0 20px 60px rgba(0,0,0,0.4);transition:border-color .3s}
+.panel:hover{border-color:rgba(56,139,255,0.3)}
+.panel-full{grid-column:1/-1}
+
+.panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.panel-title{display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:0.85rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent2)}
+.panel-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;background:rgba(56,139,255,0.12);border:1px solid rgba(56,139,255,0.2)}
+
+.field{margin-bottom:18px}
+label{display:block;font-size:0.74rem;font-weight:600;color:var(--muted);margin-bottom:8px;letter-spacing:0.08em;text-transform:uppercase;font-family:var(--mono)}
+input[type=number]{width:100%;padding:14px 18px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:var(--mono);font-size:1rem;outline:none;transition:all .25s;-moz-appearance:textfield}
+input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+input[type=number]:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(56,139,255,0.15),0 0 20px rgba(56,139,255,0.1)}
+input[type=number]::placeholder{color:rgba(180,200,255,0.25)}
+
+.btn{width:100%;padding:15px;border:none;border-radius:12px;font-family:var(--display);font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;letter-spacing:0.01em}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 8px 32px rgba(56,139,255,0.35)}
+.btn-primary:hover{box-shadow:0 8px 40px rgba(56,139,255,0.55);transform:translateY(-1px)}
+.btn-primary:active{transform:scale(0.98)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-primary .btn-shine{position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);transform:translateX(-100%);transition:transform .5s}
+.btn-primary:hover .btn-shine{transform:translateX(100%)}
+
+.status-bar{display:none;align-items:center;gap:10px;margin-top:14px;padding:12px 16px;border-radius:10px;font-size:0.83rem;animation:fadeUp .3s ease}
+.status-bar.show{display:flex}
+.status-bar.pending{background:rgba(255,184,48,0.1);border:1px solid rgba(255,184,48,0.25);color:var(--warn)}
+.status-bar.ok{background:rgba(0,229,160,0.08);border:1px solid rgba(0,229,160,0.25);color:var(--green)}
+.status-bar.err{background:rgba(255,74,110,0.08);border:1px solid rgba(255,74,110,0.25);color:var(--red)}
+.spin{width:14px;height:14px;border-radius:50%;border:2px solid transparent;border-top-color:var(--warn);animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+#errBox{display:none;padding:12px 16px;border-radius:10px;background:rgba(255,74,110,0.08);border:1px solid rgba(255,74,110,0.25);color:var(--red);font-size:0.82rem;margin-top:12px;gap:8px;align-items:flex-start;animation:fadeUp .3s ease}
+#errBox.show{display:flex}
+
+#resultArea{display:none;margin-top:24px;animation:fadeUp .4s ease}
+#resultArea.show{display:block}
+
+.product-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.product-name{font-family:var(--display);font-size:1.6rem;font-weight:800;letter-spacing:-0.02em}
+.product-id{font-family:var(--mono);font-size:0.72rem;color:var(--muted);margin-top:3px}
+
+.badge{padding:5px 14px;border-radius:50px;font-size:0.72rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;font-family:var(--mono);flex-shrink:0}
+.badge-Created{background:rgba(0,229,160,0.12);color:var(--green);border:1px solid rgba(0,229,160,0.3)}
+.badge-InTransit{background:rgba(167,139,250,0.12);color:var(--purple);border:1px solid rgba(167,139,250,0.3)}
+.badge-Delivered{background:rgba(56,139,255,0.12);color:var(--accent2);border:1px solid rgba(0,212,255,0.3)}
+.badge-Recalled{background:rgba(255,74,110,0.12);color:var(--red);border:1px solid rgba(255,74,110,0.3)}
+
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
+.info-cell{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:14px 16px;transition:border-color .25s}
+.info-cell:hover{border-color:rgba(56,139,255,0.25)}
+.info-cell.full{grid-column:1/-1}
+.info-label{font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-family:var(--mono);margin-bottom:5px}
+.info-val{font-size:0.88rem;font-family:var(--mono);word-break:break-all;color:var(--text)}
+
+.lifecycle{display:flex;margin-bottom:24px;position:relative}
+.lc-line{position:absolute;top:14px;left:0;right:0;height:2px;background:var(--border);z-index:0}
+.lc-progress{position:absolute;top:14px;left:0;height:2px;background:linear-gradient(90deg,var(--green),var(--accent2));z-index:1;transition:width .8s ease}
+.lc-step{flex:1;text-align:center;position:relative;z-index:2;padding-top:30px}
+.lc-node{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);background:var(--bg);position:absolute;top:0;left:50%;transform:translateX(-50%);display:flex;align-items:center;justify-content:center;font-size:0.65rem;transition:all .4s;z-index:2}
+.lc-text{font-size:0.65rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;font-family:var(--mono)}
+.lc-step.done .lc-node{background:var(--green);border-color:var(--green);box-shadow:0 0 16px rgba(0,229,160,0.5)}
+.lc-step.active .lc-node{background:var(--accent);border-color:var(--accent2);box-shadow:0 0 20px rgba(56,139,255,0.6)}
+.lc-step.active .lc-text{color:var(--accent2)}
+.lc-step.recalled .lc-node{background:var(--red);border-color:var(--red);box-shadow:0 0 16px rgba(255,74,110,0.5)}
+.lc-step.recalled .lc-text{color:var(--red)}
+
+#qrCard{display:none}
+#qrCard.show{display:block}
+#qrBox{display:flex;justify-content:center;margin-bottom:16px}
+#qrBox canvas,#qrBox img{border-radius:14px;border:3px solid rgba(56,139,255,0.2);box-shadow:0 0 40px rgba(56,139,255,0.15)}
+.qr-sub{text-align:center;font-size:0.75rem;color:var(--muted);font-family:var(--mono);margin-bottom:16px}
+.qr-data-box{background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:0.68rem;font-family:var(--mono);color:var(--muted);word-break:break-all;line-height:1.6;max-height:120px;overflow-y:auto}
+
+.timeline{padding:0}
+.tl-item{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--border);animation:fadeUp .4s ease both}
+.tl-item:last-child{border-bottom:none}
+.tl-left{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0}
+.tl-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0}
+.tl-line-seg{width:2px;flex:1;min-height:16px;background:var(--border)}
+.tl-body{flex:1;padding-top:4px}
+.tl-event{font-size:0.85rem;font-weight:600;margin-bottom:4px}
+.tl-meta{font-size:0.72rem;font-family:var(--mono);color:var(--muted);display:flex;flex-wrap:wrap;gap:8px}
+.tl-tx{font-family:var(--mono);font-size:0.7rem;color:var(--accent);cursor:pointer;text-decoration:underline;text-decoration-style:dotted}
+
+.tl-icon.registered{background:rgba(0,229,160,0.12);border:1px solid rgba(0,229,160,0.2);color:var(--green)}
+.tl-icon.transferred{background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.2);color:var(--purple)}
+.tl-icon.delivered{background:rgba(56,139,255,0.12);border:1px solid rgba(56,139,255,0.2);color:var(--accent2)}
+.tl-icon.recalled{background:rgba(255,74,110,0.12);border:1px solid rgba(255,74,110,0.2);color:var(--red)}
+
+.tl-empty{text-align:center;padding:32px;color:var(--muted);font-size:0.85rem}
+.tl-empty-icon{font-size:2rem;margin-bottom:8px}
+
+.contract-strip{background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:14px;padding:16px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.cs-label{font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-family:var(--mono);margin-bottom:3px}
+.cs-val{font-size:0.78rem;font-family:var(--mono);color:var(--accent2);word-break:break-all}
+.cs-sep{width:1px;height:36px;background:var(--border);flex-shrink:0}
+.cs-badge{margin-left:auto;padding:5px 14px;border-radius:50px;background:rgba(56,139,255,0.1);border:1px solid rgba(56,139,255,0.25);font-size:0.72rem;font-family:var(--mono);color:var(--accent2);flex-shrink:0}
+
+footer{border-top:1px solid var(--border);padding:48px 0;text-align:center;margin-top:40px}
+.foot-brand{font-family:var(--display);font-size:1.3rem;font-weight:800;margin-bottom:10px}
+.foot-brand em{color:var(--accent2);font-style:normal}
+footer p{font-size:0.82rem;color:var(--muted);line-height:1.8}
+.foot-tag{display:inline-flex;align-items:center;gap:8px;margin-top:16px;padding:6px 18px;border-radius:50px;border:1px solid var(--border);font-size:0.74rem;color:var(--muted);font-family:var(--mono)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.fade-in{animation:fadeUp .7s ease both}
+.fade-in-2{animation:fadeUp .7s ease .15s both}
+.fade-in-3{animation:fadeUp .7s ease .3s both}
+
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(56,139,255,0.3);border-radius:2px}
+
+@media(max-width:600px){
+.nav{flex-wrap:wrap;gap:10px}
+.hero h1{font-size:2rem}
+.info-grid{grid-template-columns:1fr}
+.info-cell.full{grid-column:1}
+.hero-metrics{gap:20px}
+.contract-strip{flex-direction:column;align-items:flex-start}
+.cs-sep{display:none}
+.cs-badge{margin-left:0}
+}
+</style>
+</head>
+<body>
+
+<div class="noise"></div>
+<div class="orbs"><div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div></div>
+<div class="grid-bg"></div>
+
+<header>
+  <div class="wrapper">
+    <div class="nav">
+      <div class="brand">
+        <div class="brand-icon">⬡</div>
+        <div>
+          <div class="brand-name">Pharma<em>Chain</em></div>
+          <div class="brand-tag">BLOCKCHAIN VERIFICATION SYSTEM</div>
+        </div>
+      </div>
+      <div class="nav-right">
+        <div class="network-pill"><span class="net-dot"></span>Sepolia Testnet</div>
+        <div id="wAddr" style="display:none"></div>
+        <button id="walletBtn" onclick="connectWallet()">
+          <span class="w-dot" id="wDot"></span>
+          <span id="wTxt">Connect MetaMask</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="hero wrapper fade-in">
+  <div class="hero-eyebrow">⛓ Ethereum · Sepolia · Smart Contract</div>
+  <h1>Pharmaceutical Supply<br/><span class="line2">Chain Verification</span></h1>
+  <p>Immutable blockchain-based authentication system ensuring drug authenticity, transparent traceability, and real-time supply chain visibility across the entire pharmaceutical lifecycle.</p>
+  <div class="hero-metrics">
+    <div class="metric"><div class="metric-val">100%</div><div class="metric-label">Tamper-Proof</div></div>
+    <div class="metric"><div class="metric-val">On-Chain</div><div class="metric-label">Audit Trail</div></div>
+    <div class="metric"><div class="metric-val">Real-Time</div><div class="metric-label">Verification</div></div>
+    <div class="metric"><div class="metric-val">Zero</div><div class="metric-label">Counterfeit Risk</div></div>
+  </div>
+</section>
+
+<section class="dashboard wrapper fade-in-2">
+
+  <div class="contract-strip" id="contractStrip">
+    <div><div class="cs-label">Smart Contract</div><div class="cs-val" id="cAddr">Not connected</div></div>
+    <div class="cs-sep"></div>
+    <div><div class="cs-label">Network</div><div class="cs-val">Ethereum Sepolia</div></div>
+    <div class="cs-sep"></div>
+    <div><div class="cs-label">Standard</div><div class="cs-val">ERC-20 Compatible</div></div>
+    <div class="cs-badge">🟢 Live</div>
+  </div>
+
+  <div class="dash-grid">
+
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title"><div class="panel-icon">🔍</div>Product Verification</div>
+      </div>
+      <div class="field">
+        <label>Product ID</label>
+        <input type="number" id="productId" placeholder="Enter product ID (e.g. 1)" min="1"/>
+      </div>
+      <button class="btn btn-primary" id="verifyBtn" onclick="verifyProduct()">
+        <span class="btn-shine"></span>
+        Verify on Blockchain
+      </button>
+      <div class="status-bar" id="txBar">
+        <span class="spin" id="txSpin"></span>
+        <span id="txMsg">Querying smart contract…</span>
+      </div>
+      <div id="errBox"><span>⚠</span><span id="errMsg"></span></div>
+
+      <div id="resultArea">
+        <div class="product-hero">
+          <div>
+            <div class="product-name" id="pName">—</div>
+            <div class="product-id" id="pId">ID: —</div>
+          </div>
+          <div class="badge" id="pBadge">—</div>
+        </div>
+
+        <div class="lifecycle">
+          <div class="lc-line"></div>
+          <div class="lc-progress" id="lcProgress" style="width:0%"></div>
+          <div class="lc-step" id="lc0"><div class="lc-node">✓</div><div class="lc-text">Created</div></div>
+          <div class="lc-step" id="lc1"><div class="lc-node">→</div><div class="lc-text">In Transit</div></div>
+          <div class="lc-step" id="lc2"><div class="lc-node">✓</div><div class="lc-text">Delivered</div></div>
+          <div class="lc-step" id="lc3"><div class="lc-node">!</div><div class="lc-text">Recalled</div></div>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-cell"><div class="info-label">Batch Number</div><div class="info-val" id="pBatch">—</div></div>
+          <div class="info-cell"><div class="info-label">Expiry Date</div><div class="info-val" id="pExpiry">—</div></div>
+          <div class="info-cell full"><div class="info-label">Current Owner</div><div class="info-val" id="pOwner">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="qrCard">
+      <div class="panel-head">
+        <div class="panel-title"><div class="panel-icon">⬛</div>QR Verification Code</div>
+      </div>
+      <div id="qrBox"></div>
+      <div class="qr-sub" id="qrSub">Scan with mobile camera to verify</div>
+      <div class="qr-data-box" id="qrData"></div>
+    </div>
+
+    <div class="panel panel-full">
+      <div class="panel-head">
+        <div class="panel-title"><div class="panel-icon">📋</div>Blockchain Event Log — Traceability Timeline</div>
+        <div style="font-size:0.72rem;color:var(--muted);font-family:var(--mono)" id="eventCount">No events loaded</div>
+      </div>
+      <div id="timeline">
+        <div class="tl-empty"><div class="tl-empty-icon">⛓</div>Verify a product to load its blockchain event history</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <div class="wrapper">
+    <div class="foot-brand">Pharma<em>Chain</em></div>
+    <p>Blockchain-powered pharmaceutical supply chain verification system<br/>Built on Ethereum · Solidity Smart Contracts · Web3.js · MetaMask</p>
+    <div class="foot-tag">🎓 Graduation Thesis Project — Computer Science & Blockchain Engineering</div>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
