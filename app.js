@@ -412,6 +412,9 @@ async function loadEvents(productId, statusKey) {
     }
     tl.innerHTML = "";
     events.forEach((ev, i) => {
+		const block = await web3.eth.getBlock(ev.blockNumber);
+const time = new Date(block.timestamp * 1000)
+  .toLocaleString();
       const isLast = i === events.length - 1;
       const cfg = eventConfig(ev._name, ev.returnValues);
       const item = document.createElement("div");
@@ -426,6 +429,7 @@ async function loadEvents(productId, statusKey) {
           <div class="tl-event">${cfg.label}</div>
           <div class="tl-meta">
             <span>Block #${ev.blockNumber}</span>
+			<span>${time}</span>
             <span class="tl-tx" onclick="openTx('${ev.transactionHash}')">${ev.transactionHash.slice(0,12)}…${ev.transactionHash.slice(-6)}</span>
             ${cfg.detail ? '<span>' + cfg.detail + '</span>' : ''}
           </div>
