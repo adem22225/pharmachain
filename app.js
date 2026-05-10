@@ -396,7 +396,9 @@ async function loadEvents(productId, statusKey) {
     const evtNames = ["ProductRegistered","OwnershipTransferred","ProductDelivered","ProductRecalled"];
     for (const name of evtNames) {
       try {
-        const res = await contract.getPastEvents(name, {
+       const res = await contract.getPastEvents(
+  name,
+  {
           filter: {id: productId},
           fromBlock: from,
           toBlock: "latest"
