@@ -1,94 +1,264 @@
 const CONTRACT_ADDRESS = "0xD327A64b0fa9C9BbB44B6FFdDF0f432712B4452C";
 
 const CONTRACT_ABI = [
-  {
-    "inputs": [
-      {"internalType":"uint256","name":"productId","type":"uint256"},
-      {"internalType":"string","name":"name","type":"string"},
-      {"internalType":"string","name":"batchNumber","type":"string"},
-      {"internalType":"uint256","name":"expiryDate","type":"uint256"}
-    ],
-    "name":"registerProduct",
-    "outputs":[],
-    "stateMutability":"nonpayable",
-    "type":"function"
-  },
-  {
-    "inputs":[
-      {"internalType":"uint256","name":"productId","type":"uint256"},
-      {"internalType":"address","name":"newOwner","type":"address"}
-    ],
-    "name":"transferProduct",
-    "outputs":[],
-    "stateMutability":"nonpayable",
-    "type":"function"
-  },
-  {
-    "inputs":[{"internalType":"uint256","name":"productId","type":"uint256"}],
-    "name":"confirmDelivery",
-    "outputs":[],
-    "stateMutability":"nonpayable",
-    "type":"function"
-  },
-  {
-    "inputs":[{"internalType":"uint256","name":"productId","type":"uint256"}],
-    "name":"recallProduct",
-    "outputs":[],
-    "stateMutability":"nonpayable",
-    "type":"function"
-  },
-  {
-    "inputs":[{"internalType":"uint256","name":"productId","type":"uint256"}],
-    "name":"getProduct",
-    "outputs":[
-      {"internalType":"string","name":"name","type":"string"},
-      {"internalType":"string","name":"batchNumber","type":"string"},
-      {"internalType":"address","name":"owner","type":"address"},
-      {"internalType":"uint8","name":"status","type":"uint8"},
-      {"internalType":"uint256","name":"expiryDate","type":"uint256"}
-    ],
-    "stateMutability":"view",
-    "type":"function"
-  },
-  {
-    "anonymous":false,
-    "inputs":[
-      {"indexed":true,"internalType":"uint256","name":"productId","type":"uint256"},
-      {"indexed":false,"internalType":"string","name":"name","type":"string"},
-      {"indexed":true,"internalType":"address","name":"manufacturer","type":"address"}
-    ],
-    "name":"ProductRegistered",
-    "type":"event"
-  },
-  {
-    "anonymous":false,
-    "inputs":[
-      {"indexed":true,"internalType":"uint256","name":"productId","type":"uint256"},
-      {"indexed":true,"internalType":"address","name":"from","type":"address"},
-      {"indexed":true,"internalType":"address","name":"to","type":"address"}
-    ],
-    "name":"OwnershipTransferred",
-    "type":"event"
-  },
-  {
-    "anonymous":false,
-    "inputs":[
-      {"indexed":true,"internalType":"uint256","name":"productId","type":"uint256"},
-      {"indexed":true,"internalType":"address","name":"deliveredTo","type":"address"}
-    ],
-    "name":"ProductDelivered",
-    "type":"event"
-  },
-  {
-    "anonymous":false,
-    "inputs":[
-      {"indexed":true,"internalType":"uint256","name":"productId","type":"uint256"}
-    ],
-    "name":"ProductRecalled",
-    "type":"event"
-  }
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_id",
+				"type": "uint256"
+			}
+		],
+		"name": "confirmDelivery",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			}
+		],
+		"name": "OwnershipTransferred",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "deliveredTo",
+				"type": "address"
+			}
+		],
+		"name": "ProductDelivered",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			}
+		],
+		"name": "ProductRecalled",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "manufacturer",
+				"type": "address"
+			}
+		],
+		"name": "ProductRegistered",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_id",
+				"type": "uint256"
+			}
+		],
+		"name": "recallProduct",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_id",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "_name",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_batch",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_description",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_expiryDate",
+				"type": "uint256"
+			}
+		],
+		"name": "registerProduct",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_id",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "_newOwner",
+				"type": "address"
+			}
+		],
+		"name": "transferProduct",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "products",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "batchNumber",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "description",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "expiryDate",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "manufacturer",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "currentOwner",
+				"type": "address"
+			},
+			{
+				"internalType": "enum PharmaSupplyChain.State",
+				"name": "state",
+				"type": "uint8"
+			},
+			{
+				"internalType": "bool",
+				"name": "exists",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_id",
+				"type": "uint256"
+			}
+		],
+		"name": "verifyProduct",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "batchNumber",
+				"type": "string"
+			},
+			{
+				"internalType": "address",
+				"name": "currentOwner",
+				"type": "address"
+			},
+			{
+				"internalType": "enum PharmaSupplyChain.State",
+				"name": "state",
+				"type": "uint8"
+			},
+			{
+				"internalType": "uint256",
+				"name": "expiryDate",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
 ];
-
 const STATUS = ["Created","InTransit","Delivered","Recalled"];
 const STATUS_LABELS = ["Created","In Transit","Delivered","Recalled"];
 
