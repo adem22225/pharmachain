@@ -399,11 +399,18 @@ async function loadEvents(productId, statusKey) {
        const res = await contract.getPastEvents(
   name,
   {
-          filter: {id: productId},
-          fromBlock: from,
-          toBlock: "latest"
-        });
-        res.forEach(e => events.push({...e, _name: name}));
+    fromBlock: from,
+    toBlock: "latest"
+  }
+);
+
+res.forEach(e => {
+  const evId = e.returnValues.id;
+
+  if (parseInt(evId) === parseInt(productId)) {
+    events.push({...e, _name: name});
+  }
+});
       } catch(_) {}
     }
     events.sort((a,b) => a.blockNumber - b.blockNumber);
