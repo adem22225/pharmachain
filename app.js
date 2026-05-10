@@ -1,19 +1,65 @@
 const CONTRACT_ADDRESS = "0xa46B6f96e5D1B71d977fEF9Fb9845B6e208E4433";
 
 const CONTRACT_ABI = [
-  {
-    "inputs":[{"internalType":"uint256","name":"_id","type":"uint256"}],
-    "name":"verifyProduct",
-    "outputs":[
-      {"internalType":"string","name":"name","type":"string"},
-      {"internalType":"string","name":"batchNumber","type":"string"},
-      {"internalType":"address","name":"currentOwner","type":"address"},
-      {"internalType":"uint8","name":"state","type":"uint8"},
-      {"internalType":"uint256","name":"expiryDate","type":"uint256"}
-    ],
-    "stateMutability":"view",
-    "type":"function"
-  }
+{
+  "inputs":[
+    {
+      "internalType":"uint256",
+      "name":"",
+      "type":"uint256"
+    }
+  ],
+  "name":"products",
+  "outputs":[
+    {
+      "internalType":"uint256",
+      "name":"id",
+      "type":"uint256"
+    },
+    {
+      "internalType":"string",
+      "name":"name",
+      "type":"string"
+    },
+    {
+      "internalType":"string",
+      "name":"batchNumber",
+      "type":"string"
+    },
+    {
+      "internalType":"string",
+      "name":"description",
+      "type":"string"
+    },
+    {
+      "internalType":"uint256",
+      "name":"expiryDate",
+      "type":"uint256"
+    },
+    {
+      "internalType":"address",
+      "name":"manufacturer",
+      "type":"address"
+    },
+    {
+      "internalType":"address",
+      "name":"currentOwner",
+      "type":"address"
+    },
+    {
+      "internalType":"uint8",
+      "name":"state",
+      "type":"uint8"
+    },
+    {
+      "internalType":"bool",
+      "name":"exists",
+      "type":"bool"
+    }
+  ],
+  "stateMutability":"view",
+  "type":"function"
+}
 ];
 
 const STATUS_MAP = [
@@ -57,20 +103,22 @@ async function verifyProduct() {
 
   try {
 
-    const result = await contract.methods
-      .verifyProduct(productId)
-      .call();
+   const result = await contract.methods
+  .products(productId)
+  .call();
 
-    const name        = result[0];
-    const batchNumber = result[1];
-    const owner       = result[2];
-    const statusIdx   = parseInt(result[3]);
-    const expiryTs    = parseInt(result[4]);
+const exists = result.exists;
 
-    if (!name || name === "") {
+if (!exists) {
 
-      throw new Error("Product not found");
-    }
+  throw new Error("Product not found");
+}
+
+const name = result.name;
+const batchNumber = result.batchNumber;
+const owner = result.currentOwner;
+const statusIdx = parseInt(result.state);
+const expiryTs = parseInt(result.expiryDate);
 
     const statusLabel =
       STATUS_MAP[statusIdx] || "Unknown";
