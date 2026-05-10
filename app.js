@@ -393,24 +393,18 @@ async function loadEvents(productId, statusKey) {
   try {
     const from = 0;
     const events = [];
-    const evtNames = ["ProductRegistered","OwnershipTransferred","ProductDelivered","ProductRecalled"];
-    for (const name of evtNames) {
-      try {
-       const res = await contract.getPastEvents(
-  name,
-  {
-    fromBlock: from,
-    toBlock: "latest"
-  }
-);
+    const latest = await web3.eth.getBlockNumber();
 
-res.forEach(e => {
-  const evId = e.returnValues.id;
-
-  if (parseInt(evId) === parseInt(productId)) {
-    events.push({...e, _name: name});
-  }
+const logs = await web3.eth.getPastLogs({
+  address: CONTRACT_ADDRESS,
+  fromBlock: 0,
+  toBlock: latest
 });
+
+console.log(logs);
+
+
+events.push(...logs);
       } catch(_) {}
     }
     events.sort((a,b) => a.blockNumber - b.blockNumber);
