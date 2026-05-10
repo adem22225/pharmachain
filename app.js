@@ -394,10 +394,11 @@ async function loadEvents(productId, statusKey) {
     const from = 0;
     const events = [];
     const latest = await web3.eth.getBlockNumber();
+	const fromBlock = Math.max(latest - 50000, 0);
 
 const logs = await web3.eth.getPastLogs({
   address: CONTRACT_ADDRESS,
-  fromBlock: 0,
+  fromBlock: fromBlock,
   toBlock: latest
 });
 
