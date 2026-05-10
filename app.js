@@ -411,7 +411,7 @@ async function loadEvents(productId, statusKey) {
       return;
     }
     tl.innerHTML = "";
-    events.forEach((ev, i) => {
+    for (const [i, ev] of events.entries()) {
 		const block = await web3.eth.getBlock(ev.blockNumber);
 const time = new Date(block.timestamp * 1000)
   .toLocaleString();
@@ -435,7 +435,7 @@ const time = new Date(block.timestamp * 1000)
           </div>
         </div>`;
       tl.appendChild(item);
-    });
+    }
   } catch(e) {
     document.getElementById("eventCount").textContent = "Could not load events";
     tl.innerHTML = `<div class="tl-empty"><div class="tl-empty-icon">⚠</div>Event log unavailable — check contract address and network</div>`;
