@@ -61,7 +61,12 @@ const CONTRACT_ABI = [
   "type":"function"
 }
 ];
-
+const STATUS_MAP = [
+  "Created",
+  "In Transit",
+  "Delivered",
+  "Recalled"
+];
 const web3 = new Web3(
   "https://sepolia.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"
 );
@@ -212,12 +217,8 @@ function _renderQR({
   statusLabel
 }) {
 
-  const qrData = `
-Product ID: ${productId}
-Name: ${name}
-Batch: ${batchNumber}
-Status: ${statusLabel}
-`;
+ const qrData =
+`https://pharmachain-steel.vercel.app/?product=${productId}`;
 
   const qrDiv =
     document.getElementById("qrcode");
