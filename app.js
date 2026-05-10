@@ -405,8 +405,7 @@ console.log(logs);
 
 
 events.push(...logs);
-      } catch(_) {}
-    }
+    
     events.sort((a,b) => a.blockNumber - b.blockNumber);
     document.getElementById("eventCount").textContent = events.length + " event" + (events.length !== 1 ? "s" : "") + " found";
     if (events.length === 0) {
