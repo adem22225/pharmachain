@@ -267,38 +267,21 @@ let contract = null;
 let account = null;
 
 window.addEventListener("DOMContentLoaded", async () => {
+	web3 = new Web3(
+  "https://ethereum-sepolia-rpc.publicnode.com"
+);
+
+contract = new web3.eth.Contract(
+  CONTRACT_ABI,
+  CONTRACT_ADDRESS
+);
   document.getElementById("cAddr").textContent = CONTRACT_ADDRESS;
-  if (window.ethereum) {
-    try {
-      const accounts = await window.ethereum.request({method:"eth_accounts"});
-      if (accounts.length > 0) await setupWeb3(accounts[0]);
-    } catch(_) {}
-    window.ethereum.on("accountsChanged", accs => {
-      if (accs.length === 0) disconnect();
-      else setupWeb3(accs[0]);
-    });
-    window.ethereum.on("chainChanged", () => location.reload());
-  }
 });
 
-async function connectWallet() {
-  if (!window.ethereum) {
-    showErr("MetaMask is not installed. Please install it from metamask.io");
-    return;
-  }
-  try {
-    const accounts = await window.ethereum.request({method:"eth_requestAccounts"});
-    await setupWeb3(accounts[0]);
-  } catch(e) {
-    if (e.code === 4001) showErr("MetaMask connection rejected by user.");
-    else showErr("Connection failed: " + e.message);
-  }
-}
+
 
 async function setupWeb3(acc) {
-  web3 = new Web3(window.ethereum);
   account = acc;
-  contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
   const chainId = await web3.eth.getChainId();
   if (chainId !== 11155111) {
     showErr("Wrong network — please switch MetaMask to Sepolia Testnet.");
@@ -327,7 +310,6 @@ function disconnect() {
 
 async function verifyProduct() {
   clearAll();
-  if (!web3 || !contract) { showErr("Connect your MetaMask wallet first."); return; }
   const raw = document.getElementById("productId").value.trim();
   if (!raw || isNaN(raw) || Number(raw) <= 0) { showErr("Enter a valid positive Product ID."); return; }
   const id = parseInt(raw, 10);
